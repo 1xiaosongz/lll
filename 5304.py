@@ -1,13 +1,11 @@
 import json
 import math
 from itertools import chain
-import heapq
-import matplotlib.pyplot as plt
-# import prediction
-# from 模拟器 import file_write
+import prediction
 from matplotlib import pyplot as plt
 import numpy as np
-from collections import defaultdict
+
+
 def read_json_txt(file_path):
     """读取 JSON 格式的文本文件"""
     try:
@@ -231,8 +229,8 @@ def Manual_RT_screening(numeric_data):
             peaks.append((i,numeric_data[i]))
 
     #把peak的检测位置左右扩n个点
-    leftPeak=[(index , value) for index, value in peaks]   #-5
-    rightPeak=[(index , value) for index, value in peaks]   #+5
+    leftPeak=[(index - 5, value) for index, value in peaks]   #-5
+    rightPeak=[(index + 5, value) for index, value in peaks]   #+5
     # print(peaks,"        peaks          ")
     n = len(ecg_II)
     seen = {}  # 用于去重的字典
@@ -248,13 +246,10 @@ def Manual_RT_screening(numeric_data):
 
     # 转换为列表并排序
     peaks = sorted(seen.values(), key=lambda x: x[0])
-    # print(peaks)
-    # print("===================================")
     avg=math.floor(np.mean(ecg_II))
     #删除临近的index
     flag=0
     Tmp=()
-    # print(x)
     rtIndex=[]
     for i in peaks:
         if flag==0:
@@ -280,24 +275,20 @@ def Manual_RT_screening(numeric_data):
     # print("Bios:",Bios)
     R=[]
     T=[]
-    # for i in rtIndex:
-    #     if abs(ecg_II[i] - avg)>= Bios:
-    #         R.append(i)
-    #     else:
-    #         T.append(i)
     for i in rtIndex:
         if ecg_II[i] > avg:
-            if ecg_II[i] - avg>= 1.1*Bios:
+            if ecg_II[i] - avg>= 0.9* Bios:
                 R.append(i)
             else:
                 T.append(i)
         else:
-            if abs(ecg_II[i] - avg) >= 0.5*Bios:
+            if abs(ecg_II[i] - avg) >= 0.5 * Bios:
                 R.append(i)
             else:
                 T.append(i)
     print("=====================================")
     return R,T
+
 
 def count_elements(err_c_r,i):
     if not err_c_r:
@@ -420,7 +411,7 @@ def difference_value(R):
             if abs(R[i] - R[j]) < 200:
                 R_pairs_with_small_diff.append((R[i], R[j]))
     return R_pairs_with_small_diff
-def multi(R_pairs_with_small_diff):
+def multi(R_pairs_with_small_diff,d_R_T_set):
     R_in_d_R_T=[]
     for pair in R_pairs_with_small_diff:
         for val in pair:
@@ -428,11 +419,123 @@ def multi(R_pairs_with_small_diff):
                 R_in_d_R_T.append(val)
     return R_in_d_R_T
 
+def simple_extract(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
 
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if 800 < current_arr[i + 1] - current_arr[i] < 900:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
+
+
+#//////////////////////////////////
+
+def simple_extract_1(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if current_arr[i + 1] - current_arr[i] < 400:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
+
+def simple_extract_3(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if current_arr[i + 1] - current_arr[i] < 250:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
+
+
+def simple_extract_2(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if  current_arr[i + 1] - current_arr[i] < 300:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
+
+def simple_extract_4(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if current_arr[i + 1] - current_arr[i] < 200:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
 # 使用示例
 if __name__ == "__main__":
     import os
-    base_path = "333/006-00003/"
+    base_path = "20/3015304-0033/"
     # 获取 base_path 下的所有文件名
     file_names = os.listdir(base_path)
     # 拼接完整路径
@@ -489,7 +592,6 @@ if __name__ == "__main__":
         T_D_C = json_data4['T_DetectedByComputer']
         ComputerT.append(T_D_C[0])
 
-
         file_path5 = file_path_root + "/T_DetectedByDowner.txt"  # 可以是任何扩展名，重点是内容格式
         json_data5 = read_json_txt(file_path5)
         T_D_D = json_data5['T_DetectedByDowner']
@@ -525,19 +627,19 @@ if __name__ == "__main__":
         # print(R)
         # print(T)
         # print(file_path_root)
-        # ///////////////////////
-        plt.vlines(x=R, ymin=min(ecg_II), ymax=max(ecg_II), colors='r', linestyles='solid', linewidths=1)
-        plt.vlines(x=T, ymin=min(ecg_II), ymax=max(ecg_II), colors='g', linestyles='solid', linewidths=1)
-        # plt.vlines(x=R_D_C,  ymin=min(ecg_II), ymax=max(ecg_II), colors='g', linestyles='solid', linewidths=1)
-        # plt.vlines(x=R_D_D,  ymin=min(ecg_II), ymax=max(ecg_II), colors='b', linestyles='solid', linewidths=1)
-        # # plt.vlines(x=T_D_C,  ymin=min(ecg_II), ymax=max(ecg_II), colors='c', linestyles='solid', linewidths=1)#蓝
-        # plt.vlines(x=T_D_D,  ymin=min(ecg_II), ymax=max(ecg_II), colors='m', linestyles='solid', linewidths=1)#粉m
-        #
-        # # # 绘制 ECG 信号（后画，确保不被竖线遮挡）
-
-        plt.plot(ecg_II, 'k-', label='ECG II')
-        plt.show()
-        plt.close()
+        # # ///////////////////////
+        # plt.vlines(x=R, ymin=min(ecg_II), ymax=max(ecg_II), colors='r', linestyles='solid', linewidths=1)
+        # plt.vlines(x=T, ymin=min(ecg_II), ymax=max(ecg_II), colors='g', linestyles='solid', linewidths=1)
+        # # plt.vlines(x=R_D_C,  ymin=min(ecg_II), ymax=max(ecg_II), colors='g', linestyles='solid', linewidths=1)
+        # # plt.vlines(x=R_D_D,  ymin=min(ecg_II), ymax=max(ecg_II), colors='b', linestyles='solid', linewidths=1)
+        # # # plt.vlines(x=T_D_C,  ymin=min(ecg_II), ymax=max(ecg_II), colors='c', linestyles='solid', linewidths=1)#蓝
+        # # plt.vlines(x=T_D_D,  ymin=min(ecg_II), ymax=max(ecg_II), colors='m', linestyles='solid', linewidths=1)#粉m
+        # #
+        # # # # 绘制 ECG 信号（后画，确保不被竖线遮挡）
+        # plt.title(file_path_root)
+        # plt.plot(ecg_II, 'k-', label='ECG II')
+        # plt.show()
+        # plt.close()
 
         # /////////////////
         R_dot.append(R)
@@ -548,8 +650,12 @@ if __name__ == "__main__":
 
         MRTIL.append(ManualInterval)
         # 下位机标点匹配上的RT,用于计算手动标记的平均间隔
-        Num_1 = prediction.find_mutual_nearest_rt(R_D_D[0], T_D_D[0])
-        lowerComputer = calculate_average_difference(Num_1)
+        if len(R_D_D[0]) >0 and len(T_D_D[0])>0:
+            Num_1 = prediction.find_mutual_nearest_rt(R_D_D[0], T_D_D[0])
+            lowerComputer = calculate_average_difference(Num_1)
+        else:
+            Num_1 = 0
+            lowerComputer = -2
         CRTIL.append(lowerComputer)
         file_path11 = file_path_root + "/interior_Interval.txt"
         date2 = {
@@ -581,31 +687,42 @@ if __name__ == "__main__":
     R_dot_2 = remove_elements_with_small_diff(R_dot_1)           #删除距离很近的点
     T_dot_2 = remove_elements_with_small_diff(T_dot_1)
 
-    # R_dot_3,issues_T = simple_extract(R_dot_2)
-    # T_dot_3 = T_dot_2 + issues_T
-    # T_dot_3.sort()
-    # T_dot_4,issues_R = simple_extract(T_dot_3)
-    # R_dot_4 = R_dot_3 + issues_R
+    # T_dot_4,issues_R = simple_extract_1(T_dot_2)
+    # R_dot_4 = R_dot_2 + issues_R
     # R_dot_4.sort()
     #
+    R_dot_3,issues_T = simple_extract_1(R_dot_2)
+    T_dot_3 = T_dot_2 + issues_T
+    T_dot_3.sort()
     #
+    T_dot_6, issues_R_1 = simple_extract_3(T_dot_3)
+    R_dot_6 = R_dot_3 + issues_R_1
+    R_dot_6.sort()
     #
-    # R_dot_5, issues_T_1 = simple_extract_1(R_dot_4)
-    # T_dot_5 = T_dot_4 + issues_T_1
-    # T_dot_5.sort()
+    R_dot_5, issues_T_1 = simple_extract_3(R_dot_6)
+    T_dot_5 = T_dot_6 + issues_T_1
+    T_dot_5.sort()
     #
-    # T_dot_6, issues_R_1 = simple_extract(T_dot_5)
-    # R_dot_6 = R_dot_5 + issues_R_1
-    # R_dot_6.sort()
+    T_dot_8, issues_R_2 = simple_extract_2(T_dot_5)
+    R_dot_8 = R_dot_5 + issues_R_2
+    R_dot_8.sort()
     #
-    # R_dot_7, issues_T_1 = simple_extract_1(R_dot_6)
-    # T_dot_7 = T_dot_6 + issues_T_1
-    # T_dot_7.sort()
-    #
-    #
-    # R_dot_3 = R_dot_7
-    # T_dot_3 = T_dot_7
+    R_dot_7, issues_T_1 = simple_extract_2(R_dot_8)
+    T_dot_7 = T_dot_8 + issues_T_1
+    T_dot_7.sort()
 
+    T_dot_9, issues_R_3 = simple_extract_1(T_dot_7)
+    R_dot_9 = R_dot_7 + issues_R_3
+    R_dot_9.sort()
+
+    # R_dot_10, issues_T_2 = simple_extract_1(R_dot_9)
+    # T_dot_10 = T_dot_9 + issues_T_2
+    # T_dot_10.sort()
+    #
+
+
+    R_dot_3 = R_dot_7
+    T_dot_3 = T_dot_7
 
 #///////////////////////////////
 #检查手动R   T有没有错标
@@ -654,219 +771,218 @@ if __name__ == "__main__":
 
 #////////////////////////////////////
 
+    del dR[0]
+    del dT[0]
+    dR = process_and_combine_arrays(dR)
+    dT = process_and_combine_arrays(dT)
+    R = group_array(R_dot_3, fil_size)
+    T = group_array(T_dot_3, fil_size)
 
-    # del dR[0]
-    # del dT[0]
-    # dR = process_and_combine_arrays(dR)
-    # dT = process_and_combine_arrays(dT)
-    # R = group_array(R_dot_3, fil_size)
-    # T = group_array(T_dot_3, fil_size)
-    #
-    # # //////////////////////////////////
-    # R_T = prediction.find_mutual_nearest_rt(ComputerR, ComputerT)
-    # elements_to_remove = set()
-    #
-    # # 从 R 和 T 中删除在 elements_to_remove 中出现的元素
-    # R_new = [x for x in ComputerR if x not in dR]
-    # T_new = [x for x in ComputerT if x not in dT]
-    # D_R_T_new = prediction.find_mutual_nearest_rt(R_new, T_new)
-    # x_values = []
-    # y_values = []
-    # if len(R_T) >= len(D_R_T_new):
-    #     # 找出在list1中但不在list2中的元组
-    #     extra_tuples = [item for item in R_T if item not in D_R_T_new]
-    #     result = [(x, y) for x, y in extra_tuples if abs(x - y) > 300]
-    #     # 将多出来的元组的x和y分别放入不同的列表
-    #     x_values = [item[0] for item in result]
-    #     y_values = [item[1] for item in result]
-    #
-    # d_R_T_set = set(dR + dT)
-    # # 1. 计算R数组内部元素之间的差值
-    # R_pairs_with_small_diff = difference_value(ComputerR)
-    # # 2. 计算T数组内部元素之间的差值
-    # T_pairs_with_small_diff = difference_value(ComputerT)
-    # # 3. 找出在d_R_T中的元素
-    # R_in_d_R_T = multi(R_pairs_with_small_diff)
-    # T_in_d_R_T = multi(T_pairs_with_small_diff)
-    # R_in_d_R_T.extend(x_values)
-    # T_in_d_R_T.extend(y_values)
-    # R_in_d_R_T.sort()
-    # T_in_d_R_T.sort()
-    #
-    # # ///////////////////////////////
-    #
-    # R_T=prediction.find_mutual_nearest_rt(R_dot_3, T_dot_3)    #  手动RT匹配      T  波和  R波离得很近     否则find_mutual_nearest_rt()
-    # missed_T_R = missed_detection(R_T, R_dot_3)      # 多的手R
-    # missed_R_T = error_detection(R_T, T_dot_3)       #missed_detection      R_T(r,t)     漏的 手T
-    # m_t_t = group_array(missed_R_T, fil_size)          #找出没有被匹配的点
-    # m_r_r = group_array(missed_T_R, fil_size)
-    # #R T对比
-    # matching_R_CR, CR_matching, num_CR = prediction.get_rt_interval_RR(R_dot_3,ComputerR)    #坐标(R_dot,ComputerR)    差值
-    # matching_R_DR, LR_matching, num_DR = prediction.get_rt_interval_RR(R_dot_3,lowerR)
-    # matching_T_CT, CT_matching, num_CT = prediction.get_rt_interval_RR(T_dot_3,ComputerT)
-    # matching_T_DT, LT_matching, num_DT = prediction.get_rt_interval_RR(T_dot_3, lowerT)
-    # error_detection_Computer_R_point=error_detection(matching_R_CR,ComputerR)     #所有的误检
-    # error_detection_Computer_T_point = error_detection(matching_T_CT, ComputerT)
-    # error_detection_Downer_R_point = error_detection(matching_R_DR, lowerR)
-    # error_detection_Downer_T_point=error_detection(matching_T_DT,lowerT)
-    # err_C_R = group_array(error_detection_Computer_R_point,fil_size)      #单个帧的误检    6S数据改成6400
-    # err_C_T = group_array(error_detection_Computer_T_point,fil_size)
-    # err_D_R = group_array(error_detection_Downer_R_point,fil_size)
-    # err_D_T = group_array(error_detection_Downer_T_point,fil_size)
-    # dR = group_array(R_in_d_R_T,fil_size)
-    # dT = group_array(T_in_d_R_T,fil_size)
-    #
-    # missed_Computer_R = missed_detection(matching_R_CR,R_dot_3)             #所有的漏检
-    # missed_Computer_T = missed_detection(matching_T_CT, T_dot_3)
-    # missed_Downer_R = missed_detection(matching_R_DR, R_dot_3)
-    # missed_Downer_T = missed_detection(matching_T_DT, T_dot_3)
-    # m_c_r = group_array(missed_Computer_R,fil_size)
-    # m_c_t = group_array(missed_Computer_T,fil_size)
-    # m_d_r = group_array(missed_Downer_R,fil_size)
-    # m_d_t = group_array(missed_Downer_T,fil_size)
-    #
-    # a,total_percentages= group_and_count_d_arrays(CR_matching)    #用计算出来的手动标点和上位机标点的差值  计算出上位机R点和手动标点的 <50	50 - 100	100 - 150	150 - 200	>200百分比
-    # print("------------上位机R点----------")
-    # b,total_percentages1=group_and_count_d_arrays(LR_matching)
-    # print("------------下位机R点----------")
-    # c,total_percentages2=group_and_count_d_arrays(CT_matching)
-    # print("------------上位机T点----------")
-    # d,total_percentages3=group_and_count_d_arrays(LT_matching)
-    # print("------------下位机T点----------")
-    # data={
-    #     "Manual_R_Num": len(R_dot_3),
-    #     "Computer_R_Num": len(ComputerR),
-    #     "Computer_R_matching_Num":num_CR,
-    #     "Computer_R_deviation_percentage":total_percentages,
-    #     "Computer_R_deviation_Num":a,
-    #     "Downer_R_Num": len(lowerR),
-    #     "Downer_R_matching_Num":num_DR,
-    #     "Downer_R_deviation_percentage":  total_percentages1,
-    #     "Downer_R_deviation_Num":b,
-    #     "Manual_T_Num": len(T_dot_3) ,
-    #     "Computer_T_Num": len(ComputerT),
-    #     "Computer_T_matching_Num":num_CT,
-    #     "Computer_T_deviation_percentage": total_percentages2,
-    #     "Computer_T_deviation_Num":c,
-    #     "Downer_T_Num": len(lowerT),
-    #     "Downer_T_matching_Num":num_DT,
-    #     "Downer_T_deviation_percentage": total_percentages3,
-    #     "Downer_T_deviation_Num": d,
-    #     "missed_Manual_T": (len(R_dot_3) - len(T_dot_3)),
-    #     "missed_Computer_R": (len(R_dot_3) - num_CR),
-    #     "missed_Computer_T": (len(R_dot_3) - num_CT),
-    #     "missed_Downer_R": (len(R_dot_3) - num_DR),
-    #     "missed_Downer_T": (len(R_dot_3) - num_DT),
-    #     "error_detection_Computer_R": (len(ComputerR) - num_CR),
-    #     "error_detection_Computer_T": (len(ComputerT) - num_CT),
-    #     "error_detection_Downer_R": (len(lowerR) - num_DR),
-    #     "error_detection_Downer_T": (len(lowerT) - num_DT),
-    #     "deleted_R_point":  sum(len(sublist) for sublist in dR),
-    #     "deleted_T_point": sum(len(sublist) for sublist in dT)
-    # }
-    # file_path9 = base_path+ "Overall.txt"
-    # with open(file_path9, 'w', encoding='utf-8') as file:
-    #     json.dump(data, file, indent=4, ensure_ascii=False)
-    # del CRTIL[0:2]
-    # del RTIL[0]
-    # data_Interval={
-    #     "Manual_Interval":MRTIL,    #手动标点的间隔
-    #     "Practical_Interval":CRTIL,   #实际存下来的数据的间隔
-    #     "issue_Interval":RTIL         #上位机下发的间隔
-    # }
-    # file_path10 = base_path+"RTInterval.txt"
-    # with open(file_path10, 'w', encoding='utf-8') as file:
-    #     json.dump(data_Interval, file, ensure_ascii=False)
-    #
-    # ComputerR = grouping(matching_R_CR)
-    # lowerR = grouping(matching_R_DR)
-    # ComputerT = grouping(matching_T_CT)
-    # lowerT = grouping(matching_T_DT)
-    # dR.append([])
-    # dT.append([])
-    # i=0
-    # for path in file_paths:
-    #     file_path_root = path
-    #     Num_C_R, C_R_array = group_and_count_2d_arrays(ComputerR[i])
-    #     Num_C_T, C_T_array = group_and_count_2d_arrays(ComputerT[i])
-    #     Num_D_R, D_R_array = group_and_count_2d_arrays(lowerR[i])
-    #     Num_D_T, D_T_array = group_and_count_2d_arrays(lowerT[i])
-    #
-    #     e_C_R_N, e_C_R_P = count_elements(err_C_R,i)
-    #     e_D_R_N, e_D_R_P = count_elements(err_D_R,i)
-    #     e_C_T_N, e_C_T_P = count_elements(err_C_T,i)
-    #     e_D_T_N, e_D_T_P = count_elements(err_D_T,i)
-    #
-    #     m_C_R_N, m_C_R_P = count_elements(m_c_r, i)
-    #     m_D_R_N, m_D_R_P = count_elements(m_d_r, i)
-    #     m_C_T_N, m_C_T_P = count_elements(m_c_t, i)
-    #     m_D_T_N, m_D_T_P = count_elements(m_d_t, i)
-    #     m_R_T_N, m_R_T_P = count_elements(m_t_t, i)
-    #     file_path11 = file_path_root + "/interior_Interval.txt"
-    #     if os.path.exists(file_path11):
-    #         with open(file_path11, 'r', encoding='utf-8') as file:
-    #             try:
-    #                 existing_data = json.load(file)
-    #             except json.JSONDecodeError:
-    #                 existing_data = {}
-    #     else:
-    #         existing_data = {}
-    #     date2 = {
-    #         "Manual_R_Num": len(R[i]),  # 手动R
-    #         "Manual_T_Num": len(T[i]),  # 手动T
-    #         "missed_Manual_T": m_R_T_N,      #应该是误检
-    #         "Computer_R_matching_Num": len(ComputerR[i]),
-    #         "Downer_R_matching_Num":len(lowerR[i]),
-    #         "Computer_R_deviation_Num":Num_C_R,
-    #         "Downer_R_deviation_Num":Num_D_R,
-    #         "Computer_T_matching_Num": len(ComputerT[i]),
-    #         "Downer_T_matching_Num": len(lowerT[i]),
-    #         "Computer_T_deviation_Num":Num_C_T,
-    #         "Downer_T_deviation_Num":Num_D_T,
-    #         "missed_Computer_R": m_C_R_N,
-    #         "missed_Downer_R": m_D_R_N,
-    #         "missed_Computer_T": m_C_T_N,
-    #         "missed_Downer_T": m_D_T_N,
-    #         "error_detection_Computer_R": e_C_R_N,
-    #         "error_detection_Computer_T": e_C_T_N,
-    #         "error_detection_Downer_R": e_D_R_N,
-    #         "error_detection_Downer_T": e_D_T_N,
-    #         "deleted_R_point": len(dR[i]),
-    #         "deleted_T_point": len(dT[i])
-    #     }
-    #     # ///////////
-    #     existing_data.update(date2)
-    #     with open(file_path11, 'w', encoding='utf-8') as file:
-    #         json.dump(existing_data, file, indent=4, ensure_ascii=False)
-    #     file_path = file_path_root + "/gauge_point.txt"
-    #     date = {
-    #         "missed_Manual_T_point":m_R_T_P,
-    #         "Computer_R": C_R_array,
-    #         "Computer_T": C_T_array,
-    #         "Downer_R":D_R_array,
-    #         "Downer_T":D_T_array,
-    #         "error_detection_Computer_R_point":e_C_R_P,
-    #         "error_detection_Computer_T_point":e_C_T_P,
-    #         "error_detection_Downer_R_point":e_D_R_P,
-    #         "error_detection_Downer_T_point":e_D_T_P,
-    #         "missed_Computer_R_point": m_C_R_P,
-    #         "missed_Downer_R_point": m_D_R_P,
-    #         "missed_Computer_T_point": m_C_T_P,
-    #         "missed_Downer_T_point": m_D_T_P,
-    #         "deleted_Computer_R_point":dR[ i ],
-    #         "deleted_Computer_T_point": dT[i ]
-    #             }
-    #
-    #     with open(file_path, 'w', encoding='utf-8') as file:
-    #         json.dump(date, file,  ensure_ascii=False)
-    #     file_path8 = file_path_root + "/R_DetectedByManual.txt"
-    #     data_R = {"R_DetectedByManual": R[i]}
-    #     with open(file_path8, 'w', encoding='utf-8') as file:
-    #         json.dump(data_R, file, indent=4, ensure_ascii=False)
-    #
-    #     file_path15 = file_path_root + "/T_DetectedByManual.txt"
-    #     data_T = {"T_DetectedByManual": T[i]}
-    #     with open(file_path15, 'w', encoding='utf-8') as file:
-    #         json.dump(data_T, file, indent=4, ensure_ascii=False)
-    #     i = i + 1
+    # //////////////////////////////////
+    R_T = prediction.find_mutual_nearest_rt(ComputerR, ComputerT)
+    elements_to_remove = set()
+
+    # 从 R 和 T 中删除在 elements_to_remove 中出现的元素
+    R_new = [x for x in ComputerR if x not in dR]
+    T_new = [x for x in ComputerT if x not in dT]
+    D_R_T_new = prediction.find_mutual_nearest_rt(R_new, T_new)
+    x_values = []
+    y_values = []
+    if len(R_T) >= len(D_R_T_new):
+        # 找出在list1中但不在list2中的元组
+        extra_tuples = [item for item in R_T if item not in D_R_T_new]
+        result = [(x, y) for x, y in extra_tuples if abs(x - y) > 300]
+        # 将多出来的元组的x和y分别放入不同的列表
+        x_values = [item[0] for item in result]
+        y_values = [item[1] for item in result]
+
+    d_R_T_set = set(dR + dT)
+    # 1. 计算R数组内部元素之间的差值
+    R_pairs_with_small_diff = difference_value(ComputerR)
+    # 2. 计算T数组内部元素之间的差值
+    T_pairs_with_small_diff = difference_value(ComputerT)
+    # 3. 找出在d_R_T中的元素
+    R_in_d_R_T = multi(R_pairs_with_small_diff,d_R_T_set)
+    T_in_d_R_T = multi(T_pairs_with_small_diff,d_R_T_set)
+    R_in_d_R_T.extend(x_values)
+    T_in_d_R_T.extend(y_values)
+    R_in_d_R_T.sort()
+    T_in_d_R_T.sort()
+
+    # ///////////////////////////////
+
+    R_T=prediction.find_mutual_nearest_rt(R_dot_3, T_dot_3)    #  手动RT匹配      T  波和  R波离得很近     否则find_mutual_nearest_rt()
+    missed_T_R = missed_detection(R_T, R_dot_3)      # 多的手R
+    missed_R_T = error_detection(R_T, T_dot_3)       #missed_detection      R_T(r,t)     漏的 手T
+    m_t_t = group_array(missed_R_T, fil_size)          #找出没有被匹配的点
+    m_r_r = group_array(missed_T_R, fil_size)
+    #R T对比
+    matching_R_CR, CR_matching, num_CR = prediction.get_rt_interval_RR(R_dot_3,ComputerR)    #坐标(R_dot,ComputerR)    差值
+    matching_R_DR, LR_matching, num_DR = prediction.get_rt_interval_RR(R_dot_3,lowerR)
+    matching_T_CT, CT_matching, num_CT = prediction.get_rt_interval_RR(T_dot_3,ComputerT)
+    matching_T_DT, LT_matching, num_DT = prediction.get_rt_interval_RR(T_dot_3, lowerT)
+    error_detection_Computer_R_point=error_detection(matching_R_CR,ComputerR)     #所有的误检
+    error_detection_Computer_T_point = error_detection(matching_T_CT, ComputerT)
+    error_detection_Downer_R_point = error_detection(matching_R_DR, lowerR)
+    error_detection_Downer_T_point=error_detection(matching_T_DT,lowerT)
+    err_C_R = group_array(error_detection_Computer_R_point,fil_size)      #单个帧的误检    6S数据改成6400
+    err_C_T = group_array(error_detection_Computer_T_point,fil_size)
+    err_D_R = group_array(error_detection_Downer_R_point,fil_size)
+    err_D_T = group_array(error_detection_Downer_T_point,fil_size)
+    dR = group_array(R_in_d_R_T,fil_size)
+    dT = group_array(T_in_d_R_T,fil_size)
+
+    missed_Computer_R = missed_detection(matching_R_CR,R_dot_3)             #所有的漏检
+    missed_Computer_T = missed_detection(matching_T_CT, T_dot_3)
+    missed_Downer_R = missed_detection(matching_R_DR, R_dot_3)
+    missed_Downer_T = missed_detection(matching_T_DT, T_dot_3)
+    m_c_r = group_array(missed_Computer_R,fil_size)
+    m_c_t = group_array(missed_Computer_T,fil_size)
+    m_d_r = group_array(missed_Downer_R,fil_size)
+    m_d_t = group_array(missed_Downer_T,fil_size)
+
+    a,total_percentages= group_and_count_d_arrays(CR_matching)    #用计算出来的手动标点和上位机标点的差值  计算出上位机R点和手动标点的 <50	50 - 100	100 - 150	150 - 200	>200百分比
+    print("------------上位机R点----------")
+    b,total_percentages1=group_and_count_d_arrays(LR_matching)
+    print("------------下位机R点----------")
+    c,total_percentages2=group_and_count_d_arrays(CT_matching)
+    print("------------上位机T点----------")
+    d,total_percentages3=group_and_count_d_arrays(LT_matching)
+    print("------------下位机T点----------")
+    data={
+        "Manual_R_Num": len(R_dot_3),
+        "Computer_R_Num": len(ComputerR),
+        "Computer_R_matching_Num":num_CR,
+        "Computer_R_deviation_percentage":total_percentages,
+        "Computer_R_deviation_Num":a,
+        "Downer_R_Num": len(lowerR),
+        "Downer_R_matching_Num":num_DR,
+        "Downer_R_deviation_percentage":  total_percentages1,
+        "Downer_R_deviation_Num":b,
+        "Manual_T_Num": len(T_dot_3) ,
+        "Computer_T_Num": len(ComputerT),
+        "Computer_T_matching_Num":num_CT,
+        "Computer_T_deviation_percentage": total_percentages2,
+        "Computer_T_deviation_Num":c,
+        "Downer_T_Num": len(lowerT),
+        "Downer_T_matching_Num":num_DT,
+        "Downer_T_deviation_percentage": total_percentages3,
+        "Downer_T_deviation_Num": d,
+        "missed_Manual_T": (len(R_dot_3) - len(T_dot_3)),
+        "missed_Computer_R": (len(R_dot_3) - num_CR),
+        "missed_Computer_T": (len(R_dot_3) - num_CT),
+        "missed_Downer_R": (len(R_dot_3) - num_DR),
+        "missed_Downer_T": (len(R_dot_3) - num_DT),
+        "error_detection_Computer_R": (len(ComputerR) - num_CR),
+        "error_detection_Computer_T": (len(ComputerT) - num_CT),
+        "error_detection_Downer_R": (len(lowerR) - num_DR),
+        "error_detection_Downer_T": (len(lowerT) - num_DT),
+        "deleted_R_point":  sum(len(sublist) for sublist in dR),
+        "deleted_T_point": sum(len(sublist) for sublist in dT)
+    }
+    file_path9 = base_path+ "Overall.txt"
+    with open(file_path9, 'w', encoding='utf-8') as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
+    del CRTIL[0:2]
+    del RTIL[0]
+    data_Interval={
+        "Manual_Interval":MRTIL,    #手动标点的间隔
+        "Practical_Interval":CRTIL,   #实际存下来的数据的间隔
+        "issue_Interval":RTIL         #上位机下发的间隔
+    }
+    file_path10 = base_path+"RTInterval.txt"
+    with open(file_path10, 'w', encoding='utf-8') as file:
+        json.dump(data_Interval, file, ensure_ascii=False)
+
+    ComputerR = grouping(matching_R_CR)
+    lowerR = grouping(matching_R_DR)
+    ComputerT = grouping(matching_T_CT)
+    lowerT = grouping(matching_T_DT)
+    dR.append([])
+    dT.append([])
+    i=0
+    for path in file_paths:
+        file_path_root = path
+        Num_C_R, C_R_array = group_and_count_2d_arrays(ComputerR[i])
+        Num_C_T, C_T_array = group_and_count_2d_arrays(ComputerT[i])
+        Num_D_R, D_R_array = group_and_count_2d_arrays(lowerR[i])
+        Num_D_T, D_T_array = group_and_count_2d_arrays(lowerT[i])
+
+        e_C_R_N, e_C_R_P = count_elements(err_C_R,i)
+        e_D_R_N, e_D_R_P = count_elements(err_D_R,i)
+        e_C_T_N, e_C_T_P = count_elements(err_C_T,i)
+        e_D_T_N, e_D_T_P = count_elements(err_D_T,i)
+
+        m_C_R_N, m_C_R_P = count_elements(m_c_r, i)
+        m_D_R_N, m_D_R_P = count_elements(m_d_r, i)
+        m_C_T_N, m_C_T_P = count_elements(m_c_t, i)
+        m_D_T_N, m_D_T_P = count_elements(m_d_t, i)
+        m_R_T_N, m_R_T_P = count_elements(m_t_t, i)
+        file_path11 = file_path_root + "/interior_Interval.txt"
+        if os.path.exists(file_path11):
+            with open(file_path11, 'r', encoding='utf-8') as file:
+                try:
+                    existing_data = json.load(file)
+                except json.JSONDecodeError:
+                    existing_data = {}
+        else:
+            existing_data = {}
+        date2 = {
+            "Manual_R_Num": len(R[i]),  # 手动R
+            "Manual_T_Num": len(T[i]),  # 手动T
+            "missed_Manual_T": m_R_T_N,      #应该是误检
+            "Computer_R_matching_Num": len(ComputerR[i]),
+            "Downer_R_matching_Num":len(lowerR[i]),
+            "Computer_R_deviation_Num":Num_C_R,
+            "Downer_R_deviation_Num":Num_D_R,
+            "Computer_T_matching_Num": len(ComputerT[i]),
+            "Downer_T_matching_Num": len(lowerT[i]),
+            "Computer_T_deviation_Num":Num_C_T,
+            "Downer_T_deviation_Num":Num_D_T,
+            "missed_Computer_R": m_C_R_N,
+            "missed_Downer_R": m_D_R_N,
+            "missed_Computer_T": m_C_T_N,
+            "missed_Downer_T": m_D_T_N,
+            "error_detection_Computer_R": e_C_R_N,
+            "error_detection_Computer_T": e_C_T_N,
+            "error_detection_Downer_R": e_D_R_N,
+            "error_detection_Downer_T": e_D_T_N,
+            "deleted_R_point": len(dR[i]),
+            "deleted_T_point": len(dT[i])
+        }
+        # ///////////
+        existing_data.update(date2)
+        with open(file_path11, 'w', encoding='utf-8') as file:
+            json.dump(existing_data, file, indent=4, ensure_ascii=False)
+        file_path = file_path_root + "/gauge_point.txt"
+        date = {
+            "missed_Manual_T_point":m_R_T_P,
+            "Computer_R": C_R_array,
+            "Computer_T": C_T_array,
+            "Downer_R":D_R_array,
+            "Downer_T":D_T_array,
+            "error_detection_Computer_R_point":e_C_R_P,
+            "error_detection_Computer_T_point":e_C_T_P,
+            "error_detection_Downer_R_point":e_D_R_P,
+            "error_detection_Downer_T_point":e_D_T_P,
+            "missed_Computer_R_point": m_C_R_P,
+            "missed_Downer_R_point": m_D_R_P,
+            "missed_Computer_T_point": m_C_T_P,
+            "missed_Downer_T_point": m_D_T_P,
+            "deleted_Computer_R_point":dR[ i ],
+            "deleted_Computer_T_point": dT[i ]
+                }
+
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(date, file,  ensure_ascii=False)
+        file_path8 = file_path_root + "/R_DetectedByManual.txt"
+        data_R = {"R_DetectedByManual": R[i]}
+        with open(file_path8, 'w', encoding='utf-8') as file:
+            json.dump(data_R, file, indent=4, ensure_ascii=False)
+
+        file_path15 = file_path_root + "/T_DetectedByManual.txt"
+        data_T = {"T_DetectedByManual": T[i]}
+        with open(file_path15, 'w', encoding='utf-8') as file:
+            json.dump(data_T, file, indent=4, ensure_ascii=False)
+        i = i + 1
 

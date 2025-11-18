@@ -1,13 +1,11 @@
 import json
 import math
 from itertools import chain
-import heapq
-import matplotlib.pyplot as plt
-# import prediction
-# from 模拟器 import file_write
+import prediction
 from matplotlib import pyplot as plt
 import numpy as np
-from collections import defaultdict
+
+
 def read_json_txt(file_path):
     """读取 JSON 格式的文本文件"""
     try:
@@ -231,8 +229,8 @@ def Manual_RT_screening(numeric_data):
             peaks.append((i,numeric_data[i]))
 
     #把peak的检测位置左右扩n个点
-    leftPeak=[(index , value) for index, value in peaks]   #-5
-    rightPeak=[(index , value) for index, value in peaks]   #+5
+    leftPeak=[(index - 5, value) for index, value in peaks]   #-5
+    rightPeak=[(index + 5, value) for index, value in peaks]   #+5
     # print(peaks,"        peaks          ")
     n = len(ecg_II)
     seen = {}  # 用于去重的字典
@@ -248,13 +246,10 @@ def Manual_RT_screening(numeric_data):
 
     # 转换为列表并排序
     peaks = sorted(seen.values(), key=lambda x: x[0])
-    # print(peaks)
-    # print("===================================")
     avg=math.floor(np.mean(ecg_II))
     #删除临近的index
     flag=0
     Tmp=()
-    # print(x)
     rtIndex=[]
     for i in peaks:
         if flag==0:
@@ -280,24 +275,20 @@ def Manual_RT_screening(numeric_data):
     # print("Bios:",Bios)
     R=[]
     T=[]
-    # for i in rtIndex:
-    #     if abs(ecg_II[i] - avg)>= Bios:
-    #         R.append(i)
-    #     else:
-    #         T.append(i)
     for i in rtIndex:
         if ecg_II[i] > avg:
-            if ecg_II[i] - avg>= 1.1*Bios:
+            if ecg_II[i] - avg>= 0.9* Bios:
                 R.append(i)
             else:
                 T.append(i)
         else:
-            if abs(ecg_II[i] - avg) >= 0.5*Bios:
+            if abs(ecg_II[i] - avg) >= 0.5 * Bios:
                 R.append(i)
             else:
                 T.append(i)
     print("=====================================")
     return R,T
+
 
 def count_elements(err_c_r,i):
     if not err_c_r:
@@ -420,7 +411,7 @@ def difference_value(R):
             if abs(R[i] - R[j]) < 200:
                 R_pairs_with_small_diff.append((R[i], R[j]))
     return R_pairs_with_small_diff
-def multi(R_pairs_with_small_diff):
+def multi(R_pairs_with_small_diff,d_R_T_set):
     R_in_d_R_T=[]
     for pair in R_pairs_with_small_diff:
         for val in pair:
@@ -428,11 +419,102 @@ def multi(R_pairs_with_small_diff):
                 R_in_d_R_T.append(val)
     return R_in_d_R_T
 
+def simple_extract(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if 800 < current_arr[i + 1] - current_arr[i] < 900:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
+
+
+#//////////////////////////////////
+
+def simple_extract_1(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if current_arr[i + 1] - current_arr[i] < 600:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
+
+def simple_extract_3(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if current_arr[i + 1] - current_arr[i] < 400:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
+
+
+def simple_extract_2(arr):
+    """
+    简化版本：执行两次差值计算并提取元素
+    """
+
+    def one_pass(current_arr):
+        extracted = []
+        i = 0
+        while i < len(current_arr) - 1:
+            if 750 < current_arr[i + 1] - current_arr[i] < 800:
+                extracted.append(current_arr[i + 1])
+                current_arr.pop(i + 1)
+            else:
+                i += 1
+        return extracted
+
+    remaining = arr.copy()
+    first_extracted = one_pass(remaining)
+    second_extracted = one_pass(remaining)
+
+    return remaining, first_extracted + second_extracted
 
 # 使用示例
 if __name__ == "__main__":
     import os
-    base_path = "333/006-00003/"
+    base_path = "20/3015281-0014/"
     # 获取 base_path 下的所有文件名
     file_names = os.listdir(base_path)
     # 拼接完整路径
@@ -489,7 +571,6 @@ if __name__ == "__main__":
         T_D_C = json_data4['T_DetectedByComputer']
         ComputerT.append(T_D_C[0])
 
-
         file_path5 = file_path_root + "/T_DetectedByDowner.txt"  # 可以是任何扩展名，重点是内容格式
         json_data5 = read_json_txt(file_path5)
         T_D_D = json_data5['T_DetectedByDowner']
@@ -522,9 +603,9 @@ if __name__ == "__main__":
 
 
         R,T=Manual_RT_screening(numeric_data)
-        # print(R)
-        # print(T)
-        # print(file_path_root)
+        print(R)
+        print(T)
+        print(file_path_root)
         # ///////////////////////
         plt.vlines(x=R, ymin=min(ecg_II), ymax=max(ecg_II), colors='r', linestyles='solid', linewidths=1)
         plt.vlines(x=T, ymin=min(ecg_II), ymax=max(ecg_II), colors='g', linestyles='solid', linewidths=1)
@@ -534,7 +615,7 @@ if __name__ == "__main__":
         # plt.vlines(x=T_D_D,  ymin=min(ecg_II), ymax=max(ecg_II), colors='m', linestyles='solid', linewidths=1)#粉m
         #
         # # # 绘制 ECG 信号（后画，确保不被竖线遮挡）
-
+        plt.title(file_path_root)
         plt.plot(ecg_II, 'k-', label='ECG II')
         plt.show()
         plt.close()
@@ -548,8 +629,12 @@ if __name__ == "__main__":
 
         MRTIL.append(ManualInterval)
         # 下位机标点匹配上的RT,用于计算手动标记的平均间隔
-        Num_1 = prediction.find_mutual_nearest_rt(R_D_D[0], T_D_D[0])
-        lowerComputer = calculate_average_difference(Num_1)
+        if len(R_D_D[0]) >0 and len(T_D_D[0])>0:
+            Num_1 = prediction.find_mutual_nearest_rt(R_D_D[0], T_D_D[0])
+            lowerComputer = calculate_average_difference(Num_1)
+        else:
+            Num_1 = 0
+            lowerComputer = -2
         CRTIL.append(lowerComputer)
         file_path11 = file_path_root + "/interior_Interval.txt"
         date2 = {
@@ -581,31 +666,42 @@ if __name__ == "__main__":
     R_dot_2 = remove_elements_with_small_diff(R_dot_1)           #删除距离很近的点
     T_dot_2 = remove_elements_with_small_diff(T_dot_1)
 
-    # R_dot_3,issues_T = simple_extract(R_dot_2)
-    # T_dot_3 = T_dot_2 + issues_T
-    # T_dot_3.sort()
-    # T_dot_4,issues_R = simple_extract(T_dot_3)
-    # R_dot_4 = R_dot_3 + issues_R
+    # T_dot_4,issues_R = simple_extract_1(T_dot_2)
+    # R_dot_4 = R_dot_2 + issues_R
     # R_dot_4.sort()
     #
+    R_dot_3,issues_T = simple_extract_1(R_dot_2)
+    T_dot_3 = T_dot_2 + issues_T
+    T_dot_3.sort()
     #
-    #
-    # R_dot_5, issues_T_1 = simple_extract_1(R_dot_4)
-    # T_dot_5 = T_dot_4 + issues_T_1
+    T_dot_6, issues_R_1 = simple_extract_3(T_dot_3)
+    R_dot_6 = R_dot_3 + issues_R_1
+    R_dot_6.sort()
+    # #
+    # R_dot_5, issues_T_1 = simple_extract_1(R_dot_3)
+    # T_dot_5 = T_dot_3 + issues_T_1
     # T_dot_5.sort()
     #
-    # T_dot_6, issues_R_1 = simple_extract(T_dot_5)
-    # R_dot_6 = R_dot_5 + issues_R_1
-    # R_dot_6.sort()
-    #
-    # R_dot_7, issues_T_1 = simple_extract_1(R_dot_6)
-    # T_dot_7 = T_dot_6 + issues_T_1
+    # T_dot_8, issues_R_2 = simple_extract_2(T_dot_5)
+    # R_dot_8 = R_dot_5 + issues_R_2
+    # R_dot_8.sort()
+    # #
+    # R_dot_7, issues_T_1 = simple_extract_1(R_dot_8)
+    # T_dot_7 = T_dot_8 + issues_T_1
     # T_dot_7.sort()
     #
+    # T_dot_9, issues_R_3 = simple_extract_1(T_dot_7)
+    # R_dot_9 = R_dot_7 + issues_R_3
+    # R_dot_9.sort()
     #
-    # R_dot_3 = R_dot_7
-    # T_dot_3 = T_dot_7
+    # R_dot_10, issues_T_2 = simple_extract_1(R_dot_9)
+    # T_dot_10 = T_dot_9 + issues_T_2
+    # T_dot_10.sort()
+    #
 
+
+    R_dot_3 = R_dot_6
+    T_dot_3 = T_dot_6
 
 #///////////////////////////////
 #检查手动R   T有没有错标
@@ -653,7 +749,6 @@ if __name__ == "__main__":
     #     plt.show()
 
 #////////////////////////////////////
-
 
     # del dR[0]
     # del dT[0]
