@@ -529,7 +529,7 @@ def simple_extract_4(arr):
 # 使用示例
 if __name__ == "__main__":
     import os
-    base_path = "20/3015905-0013/"
+    base_path = "20/3015893-0012/"
     # 获取 base_path 下的所有文件名
     file_names = os.listdir(base_path)
     # 拼接完整路径
