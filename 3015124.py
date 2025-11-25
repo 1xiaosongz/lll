@@ -282,7 +282,7 @@ def Manual_RT_screening(numeric_data):
             else:
                 T.append(i)
         else:
-            if abs(ecg_II[i] - avg) >= 0.5 * Bios:
+            if abs(ecg_II[i] - avg) >=0.5 * Bios:
                 R.append(i)
             else:
                 T.append(i)
@@ -428,9 +428,9 @@ def simple_extract(arr):
         extracted = []
         i = 0
         while i < len(current_arr) - 1:
-            if 800 < current_arr[i + 1] - current_arr[i] < 900:
-                extracted.append(current_arr[i + 1])
-                current_arr.pop(i + 1)
+            if  current_arr[i + 1] - current_arr[i] == 499:
+                extracted.append(current_arr[i ])
+                current_arr.pop(i )
             else:
                 i += 1
         return extracted
@@ -535,7 +535,7 @@ def simple_extract_4(arr):
 # 使用示例
 if __name__ == "__main__":
     import os
-    base_path = "20/3015304-0033/"
+    base_path = "20/3015124-0004/"
     # 获取 base_path 下的所有文件名
     file_names = os.listdir(base_path)
     # 拼接完整路径
@@ -687,10 +687,7 @@ if __name__ == "__main__":
     R_dot_2 = remove_elements_with_small_diff(R_dot_1)           #删除距离很近的点
     T_dot_2 = remove_elements_with_small_diff(T_dot_1)
 
-    # T_dot_4,issues_R = simple_extract_1(T_dot_2)
-    # R_dot_4 = R_dot_2 + issues_R
-    # R_dot_4.sort()
-    #
+
     R_dot_3,issues_T = simple_extract_1(R_dot_2)
     T_dot_3 = T_dot_2 + issues_T
     T_dot_3.sort()
@@ -715,11 +712,16 @@ if __name__ == "__main__":
     R_dot_9 = R_dot_7 + issues_R_3
     R_dot_9.sort()
 
-    # R_dot_10, issues_T_2 = simple_extract_1(R_dot_9)
-    # T_dot_10 = T_dot_9 + issues_T_2
-    # T_dot_10.sort()
-    #
+    merged = sorted(R_dot_9 + T_dot_9)
+    # 找出需要剔除的元素（后一个元素减前一个元素小于2）
+    c = {merged[i + 1] for i in range(len(merged) - 1) if merged[i + 1] - merged[i] < 175}
+    # 从a和b中剔除c中的元素
+    R_dot_17 = [x for x in R_dot_9 if x not in c]
+    T_dot_17 = [x for x in T_dot_9 if x not in c]
 
+    R_dot_7, issues_T_1 = simple_extract(R_dot_17)
+    T_dot_7 = T_dot_17 + issues_T_1
+    T_dot_7.sort()
 
     R_dot_3 = R_dot_7
     T_dot_3 = T_dot_7
@@ -728,6 +730,8 @@ if __name__ == "__main__":
 #检查手动R   T有没有错标
     plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+
+
     def plot_ecg_segments(file_paths, ecg, R_dot_3, T_dot_3, ecg_size, start_index=0):
         """
         分段显示ECG文件数据
@@ -776,6 +780,7 @@ if __name__ == "__main__":
     # 使用示例：
     # 从第3个文件开始画（索引为2）
     plot_ecg_segments(file_paths, ecg, R_dot_3, T_dot_3, ecg_size, start_index=50)
+
 
 #////////////////////////////////////
 
@@ -993,4 +998,4 @@ if __name__ == "__main__":
     #     with open(file_path15, 'w', encoding='utf-8') as file:
     #         json.dump(data_T, file, indent=4, ensure_ascii=False)
     #     i = i + 1
-
+    #

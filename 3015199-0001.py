@@ -741,45 +741,56 @@ if __name__ == "__main__":
     # plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']  # 用来正常显示中文标签
     # plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
     #
-    # # 然后继续你的画图代码
-    # plt.figure(figsize=(15, 8))
-    # # 也可以分段显示，每段显示一个文件的数据
-    # for i, path in enumerate(file_paths):
-    #     plt.figure(figsize=(12, 6))
     #
-    #     # 计算当前文件在合并ECG中的起始和结束位置
-    #     start_idx = i * ecg_size
-    #     end_idx = start_idx + ecg_size
-    #
-    #     # 提取当前文件的ECG数据
-    #     current_ecg = ecg[start_idx:end_idx]
-    #
-    #     # 提取当前文件的R和T点（在全局坐标中的位置）
-    #     current_R = [r for r in R_dot_3 if start_idx <= r < end_idx]
-    #     current_T = [t for t in T_dot_3 if start_idx <= t < end_idx]
-    #
-    #     # 转换为局部坐标
-    #     local_R = [r - start_idx for r in current_R]
-    #     local_T = [t - start_idx for t in current_T]
-    #
-    #     # 绘制当前文件的ECG
-    #     plt.plot(current_ecg, 'k-', linewidth=0.8, alpha=0.7, label='ECG Signal')
-    #
-    #     # 标记R点
-    #     if local_R:
-    #         plt.plot(local_R, [current_ecg[r] for r in local_R],
-    #                  'ro', markersize=5, label='R波')
-    #     # 标记T点
-    #     if local_T:
-    #         plt.plot(local_T, [current_ecg[t] for t in local_T],
-    #                  'b^', markersize=5, label='T波')
-    #     plt.xlabel('采样点')
-    #     plt.ylabel('幅值')
-    #     plt.title(f'ECG信号与检测到的R波和T波 - 文件 {i + 1}')
-    #     plt.legend()
-    #     plt.grid(True, alpha=0.3)
-    #     plt.tight_layout()
-    #     plt.show()
+    # def plot_ecg_segments(file_paths, ecg, R_dot_3, T_dot_3, ecg_size, start_index=0):
+    #     """
+    #     分段显示ECG文件数据
+    #     参数:
+    #     file_paths: 文件路径列表
+    #     ecg: 合并后的ECG数据
+    #     R_dot_3: R点位置列表
+    #     T_dot_3: T点位置列表
+    #     ecg_size: 每个文件的ECG数据长度
+    #     start_index: 从第几个文件开始画 (默认从0开始)
+    #     """
+    #     # 确保起始索引在有效范围内
+    #     start_index = max(0, min(start_index, len(file_paths) - 1))
+    #     # 从指定索引开始遍历文件
+    #     for i in range(start_index, len(file_paths)):
+    #         plt.figure(figsize=(12, 6))
+    #         # 计算当前文件在合并ECG中的起始和结束位置
+    #         start_idx = i * ecg_size
+    #         end_idx = start_idx + ecg_size
+    #         # 提取当前文件的ECG数据
+    #         current_ecg = ecg[start_idx:end_idx]
+    #         # 提取当前文件的R和T点（在全局坐标中的位置）
+    #         current_R = [r for r in R_dot_3 if start_idx <= r < end_idx]
+    #         current_T = [t for t in T_dot_3 if start_idx <= t < end_idx]
+    #         # 转换为局部坐标
+    #         local_R = [r - start_idx for r in current_R]
+    #         local_T = [t - start_idx for t in current_T]
+    #         # 绘制当前文件的ECG
+    #         plt.plot(current_ecg, 'k-', linewidth=0.8, alpha=0.7, label='ECG Signal')
+    #         # 标记R点
+    #         if local_R:
+    #             plt.plot(local_R, [current_ecg[r] for r in local_R],
+    #                      'ro', markersize=5, label='R波')
+    #         # 标记T点
+    #         if local_T:
+    #             plt.plot(local_T, [current_ecg[t] for t in local_T],
+    #                      'b^', markersize=5, label='T波')
+    #         plt.xlabel('采样点')
+    #         plt.ylabel('幅值')
+    #         plt.title(f'ECG信号与检测到的R波和T波 - 文件 {i + 1} (总文件 {len(file_paths)})')
+    #         plt.legend()
+    #         plt.grid(True, alpha=0.3)
+    #         plt.tight_layout()
+    #         plt.show()
+    #         plt.close('all')
+    # # 使用示例：
+    # # 从第3个文件开始画（索引为2）
+    # plot_ecg_segments(file_paths, ecg, R_dot_3, T_dot_3, ecg_size, start_index=0)
+
 
 #////////////////////////////////////
 
