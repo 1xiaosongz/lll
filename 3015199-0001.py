@@ -639,10 +639,6 @@ if __name__ == "__main__":
         R_dot.append(R)
         T_dot.append(T)
         # 手动标点匹配上的RT,用于计算手动标记的平均间隔
-        Num  =prediction.find_mutual_nearest_rt(R, T)
-        ManualInterval=calculate_average_difference(Num)
-
-        MRTIL.append(ManualInterval)
         # 下位机标点匹配上的RT,用于计算手动标记的平均间隔
         if len(R_D_D[0]) >0 and len(T_D_D[0])>0:
             Num_1 = prediction.find_mutual_nearest_rt(R_D_D[0], T_D_D[0])
@@ -653,7 +649,7 @@ if __name__ == "__main__":
         CRTIL.append(lowerComputer)
         file_path11 = file_path_root + "/interior_Interval.txt"
         date2 = {
-            "Manual_Interval":ManualInterval,    #手动标点的间隔
+
             "Downer_Interval":lowerComputer,   #实际存下来的数据的间隔
             "Computer_Interval":RTI ,         #上位机下发的间隔
             "Computer_R_Num":len(R_D_C[0]),   #上位机R标点个数
@@ -800,7 +796,28 @@ if __name__ == "__main__":
     dT = process_and_combine_arrays(dT)
     R = group_array(R_dot_3, fil_size)
     T = group_array(T_dot_3, fil_size)
-
+    j = 0
+    for path in file_paths:
+        file_path_root = path
+        r_sub = R[j]
+        t_sub = T[j]
+        Num = prediction.find_mutual_nearest_rt(r_sub, t_sub)
+        ManualInterval = calculate_average_difference(Num)
+        MRTIL.append(ManualInterval)
+        file_path11 = file_path_root + "/interior_Interval.txt"
+        if os.path.exists(file_path11):
+            with open(file_path11, 'r', encoding='utf-8') as file:
+                try:
+                    existing_data = json.load(file)
+                except json.JSONDecodeError:
+                    existing_data = {}
+        else:
+            existing_data = {}
+        date2 = {"Manual_Interval": ManualInterval}  # 手动标点的间隔
+        existing_data.update(date2)
+        with open(file_path11, 'w', encoding='utf-8') as file:
+            json.dump(existing_data, file, indent=4, ensure_ascii=False)
+        j = j + 1
     # //////////////////////////////////
     R_T = prediction.find_mutual_nearest_rt(ComputerR, ComputerT)
     elements_to_remove = set()
@@ -910,7 +927,7 @@ if __name__ == "__main__":
     del RTIL[0]
     data_Interval={
         "Manual_Interval":MRTIL,    #手动标点的间隔
-        "Practical_Interval":CRTIL,   #实际存下来的数据的间隔
+        "Practical_Interval":RTIL,   #实际存下来的数据的间隔
         "issue_Interval":RTIL         #上位机下发的间隔
     }
     file_path10 = base_path+"RTInterval.txt"
